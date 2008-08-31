@@ -1,0 +1,27 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=2364
+
+Place the cursor on the type you need to include. If it is your class,
+for example MyClass, enter in Normal mode:
+       :call AutoIncludeCC()
+The string #include "myclass.h" will be inserted in file.
+For type from library, for example STL, enter:
+       :call AutoIncludeLib("stl")
+ At first time you well be prompted to enter the correct header. You
+should enter full text for include statement, i.e. with < >. In next
+time this header will be inserted automatically even after reloading of   vim.
+You can also place the special marks into file. For you types this is
+the "project headers". In this case #include will be inserted after
+line with this text:
+   //project headers
+   #include "myclass.h"
+For type from the libraries this text is the "libname headers", where libname
+is name of library:
+   //stl headers
+   #include <vector>
+
+   //wx headers
+   #include <wx/menu.h>
+
+ Of course, you can create map for calling of this function:
+map ;; :call AutoIncludeCC()<cr>
+map ;;w :call AutoIncludeLib("wx")<cr>
