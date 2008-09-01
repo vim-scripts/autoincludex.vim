@@ -23,16 +23,16 @@
 "   For type from library, for example STL, enter:
 "       :call AutoIncludeLib("stl")
 "   At first time you well be prompted to enter the correct header. You
-"   should enter full text for include statement, i.e. with < >. In next
-"   time this header will be inserted automatically even after reloading of
+"   should enter full text for include statement, i.e. with < >. In next time
+"   this header will be inserted automatically even after reloading of
 "   vim.
 "   You can also place the special marks into file. For you types this is
 "   the "project headers". In this case #include will be inserted after
 "   line with this text:
 "   //project headers
 "   #include "myclass.h"
-"   For type from the libraries this text is the "libname headers", where libname
-"   is name of library:
+"   For type from the libraries this text is the "libname headers", where
+"   libname is name of library:
 "   //stl headers
 "   #include <vector>
 "
@@ -40,8 +40,18 @@
 "   #include <wx/menu.h>
 "
 "   Of course, you can create map for calling of this function:
-"   map ;i :call AutoIncludeCC()<cr>
-"   map ;iw :call AutoIncludeLib("wx")<cr>
+"   map ;; :call AutoIncludeCC()<cr>
+"   map ;;w :call AutoIncludeLib("wx")<cr>
+"
+"   For other languages you may specify options g:ainc_header_prefix and
+"   g:ainc_header_suffix for prefix and suffix of included header. For
+"   example, for php this options may have the values "require_once('" and
+"   "');"; for python - "import " and ""
+"
+" Changelog:
+"   0.9 - Initial release
+"   1.0 - bugfix of processing headers with \ and /
+"       - Added options g:ainc_header_prefix and g:ainc_header_suffix
 "
 " P.S.: 
 "   1. This script will be written under influence of script
@@ -57,8 +67,16 @@ let g:loaded_autoincludex = 1
 
 " Dictionary of dictionaries with headers info
 let dict_inc = {}
+" Path to files with headers' info
 if !exists("g:dict_inc_db_path")
     let g:dict_inc_db_path = $HOME."/.vim/includesdb/"
+endif
+" Header's prefix and suffix
+if !exists("g:ainc_header_prefix")
+    let g:ainc_header_prefix = "#include "
+endif
+if !exists("g:ainc_header_suffix")
+    let g:ainc_header_suffix = ""
 endif
 
 " Finds header string for a:obj_name into subdict dict_inc[a:subdict_key]
@@ -80,7 +98,7 @@ endfun
 function! AutoIncludeLib(libname)
     let obj_name = expand("<cword>")
     let mark_inc = a:libname.' headers'
-    let str_inc = '<'.s:SearchInclude(a:libname, obj_name).'>'
+    let str_inc = s:SearchInclude(a:libname, obj_name)
     call s:InsertInclude(mark_inc, str_inc)
 endfun
 
@@ -95,7 +113,7 @@ endfun
 " Inserts string '#include a:str_inc' after line with 'a:mark_inc' text
 function! s:InsertInclude(mark_inc, str_inc)
     let old_line_num = line(".")
-    let x = '#include '.a:str_inc
+    let x = g:ainc_header_prefix.escape(escape(a:str_inc, '\'), '/').g:ainc_header_suffix
     try
         execute '/'.x
         echo 'Header '.a:str_inc.' is already included'
